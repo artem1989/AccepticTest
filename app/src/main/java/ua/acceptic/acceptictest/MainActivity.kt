@@ -51,8 +51,6 @@ class MainActivity : AppCompatActivity() {
         if (permission != PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "Permission to record denied")
             makeRequest()
-        } else {
-
         }
     }
 
@@ -68,35 +66,40 @@ class MainActivity : AppCompatActivity() {
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, "Read storage Denied", Toast.LENGTH_SHORT).show()
                     Log.i(TAG, "Permission has been denied by user")
+                    finish()
                 } else {
-                    initAnalogClock()
-                    initViewFlipper()
-
-                    photoViewModel = ViewModelProviders.of(this).get(PhotoViewModel::class.java)
-                    photoViewModel!!.getAllPhotos().observe(this, Observer { photos: List<Media>? ->
-                        for (photo in photos!!) {
-
-                            var mediaView: View
-                            when (photo.mediaType) {
-                                MediaType.IMAGE -> {
-                                    mediaView = ImageView(this)
-                                    mediaView.scaleType = ImageView.ScaleType.FIT_CENTER
-                                    Picasso.get().load("file:///" + photo.path).into(mediaView)
-                                    viewFlipper.addView(mediaView)
-                                }
-
-                                MediaType.VIDEO -> {
-                                    mediaView = VideoView(this)
-                                    mediaView.setVideoPath(photo.path)
-                                    mediaView.start()
-                                    viewFlipper.addView(mediaView)
-                                }
-                            }
-                        }
-                    })
+                    init()
                     Log.i(TAG, "Permission has been granted by user")
                 }
             }
         }
+    }
+
+    private fun init() {
+        initAnalogClock()
+        initViewFlipper()
+
+        photoViewModel = ViewModelProviders.of(this).get(PhotoViewModel::class.java)
+        photoViewModel?.getAllPhotos()?.observe(this, Observer { photos: List<Media>? ->
+            for (photo in photos!!) {
+
+                var mediaView: View
+                when (photo.mediaType) {
+                    MediaType.IMAGE -> {
+                        mediaView = ImageView(this)
+                        mediaView.scaleType = ImageView.ScaleType.FIT_CENTER
+                        Picasso.get().load("file:///" + photo.path).into(mediaView)
+                        viewFlipper.addView(mediaView)
+                    }
+
+                    MediaType.VIDEO -> {
+                        mediaView = VideoView(this)
+                        mediaView.setVideoPath(photo.path)
+                        mediaView.start()
+                        viewFlipper.addView(mediaView)
+                    }
+                }
+            }
+        })
     }
 }
